@@ -1,1 +1,15 @@
-export const suggessitions=["background","wallpaper","women","flowers","mountain","travel","autumn","sea","house","winter","tree","moon","iphone wallpaper"]
+export const suggessitions = [
+  "background",
+  "wallpaper",
+  "women",
+  "flowers",
+  "mountain",
+  "travel",
+  "autumn",
+  "sea",
+  "house",
+  "winter",
+  "tree",
+  "moon",
+  "iphone wallpaper",
+];

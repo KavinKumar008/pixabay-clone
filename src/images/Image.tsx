@@ -8,14 +8,14 @@ import elephant from "../assets/item7elephant.jpg";
 import monkey from "../assets/item8monkey.jpg";
 import mountain from "../assets/item9mountain.jpg";
 
-export const images=[
-    house,
-    cat,
-    grass,
-    sea,
-    phone,
-    bird,
-    elephant,
-    monkey,
-    mountain
-]
+export const images = [
+  house,
+  cat,
+  grass,
+  sea,
+  phone,
+  bird,
+  elephant,
+  monkey,
+  mountain,
+];

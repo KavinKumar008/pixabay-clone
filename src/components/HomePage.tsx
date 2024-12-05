@@ -15,6 +15,7 @@ const HomePage = () => {
 
   const [storedApiData, setStoredApiData] = useState<pixabayResponse[]>([]);
   const [clickedImages, setClickedImages] = useState("");
+  const [inputValue, setInputValue] = useState("");
   // console.log(suggessitions);
   // console.log(import.meta.env.VITE_API_KEY);
 
@@ -25,7 +26,9 @@ const HomePage = () => {
   async function handleCallApi() {
     try {
       const response = await axios.get(
-        `https://pixabay.com/api/?key=${key}&q=${clickedImages}&image_type=photo&per_page=20&safesearch=true`
+        `https://pixabay.com/api/?key=${key}&q=${
+          clickedImages || inputValue
+        }&image_type=photo&per_page=20&safesearch=true`
       );
       if (response.status === 200) {
         setStoredApiData(response.data.hits);
@@ -38,13 +41,27 @@ const HomePage = () => {
 
   useEffect(() => {
     handleCallApi();
-  }, [clickedImages]);
+  }, [clickedImages, inputValue]);
 
   function handleClickData(item: string) {
     setClickedImages(item);
   }
 
+  function handleSearchClick() {
+    handleCallApi();
+    setInputValue("");
+    console.log("hiiii ");
+  }
+
+  const handleKeyPress = (event) => {
+    // look for the Enter keyCode
+    if (event.keyCode === 13 || event.which === 13) {
+      handleCallApi();
+      setInputValue("");
+    }
+  };
   console.log(clickedImages);
+  console.log(inputValue);
   return (
     <main
       style={{ backgroundImage: `url(${Clonebg})` }}
@@ -55,7 +72,7 @@ const HomePage = () => {
           <div>
             <h2 className="text-white text-3xl font-bold">PIXABAY</h2>
           </div>
-          <div>Explore</div>
+          {/* <div>Explore</div> */}
         </div>
 
         {/* </section> */}
@@ -66,9 +83,12 @@ const HomePage = () => {
             </h1>
           </div>
           <div className="flex items-center gap-4  bg-white text-center p-4 rounded-full">
-            <IoSearch className="text-xl" />
+            <IoSearch className="text-xl" onClick={handleSearchClick} />
             <input
               type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={handleKeyPress}
               placeholder="Search for free image, Videos, Music & more"
               className="w-full border-none outline-none text-[15px] placeholder-[#191b26] opacity-90 focus:opacity-25"
             />
