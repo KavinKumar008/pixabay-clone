@@ -5,28 +5,17 @@ import { suggessitions } from "../utils/Suggessition";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { proposal } from "../proposal/Proposal";
-
-type pixabayResponse = {
-  webformatURL: string;
-  id: number;
-  largeImageURL: string;
-};
-
-type pixbayVideoResponse = {
-  url: string;
-  id: number;
-};
+import { pixabayResponse } from "../types/pixabyResponse";
 
 const HomePage = () => {
   const key = import.meta.env.VITE_API_KEY;
   const videoKey = import.meta.env.VITE_PIXABAY_VIDEO_API_KEY;
 
   const [storedApiData, setStoredApiData] = useState<pixabayResponse[]>([]);
-  const [videosApiData, setVideosApiData] = useState<pixbayVideoResponse[]>([]);
+
+  const [imageType, setImageType] = useState("all");
   // const [clickedImages, setClickedImages] = useState("");
   const [inputValue, setInputValue] = useState("");
-  const [imageSize, setImageSize] = useState("");
-  const [loadingImage, setLoadingImage] = useState(false);
   // console.log(suggessitions);
   // console.log(import.meta.env.VITE_API_KEY);
 
@@ -111,37 +100,39 @@ const HomePage = () => {
 
   function handleImageSize(item: string) {
     window.open(item, "_blank");
-    setImageSize(item);
     console.log(item);
   }
 
-  async function handleProposal(item: string) {
-    console.log(item);
+  async function handleProposal(type: string) {
+    // setImageType(item);
     try {
       const response = await axios.get(
-        `https://pixabay.com/api/videos/?key=${videoKey}&q=${item}&image_type=film&per_page=20&safesearch=true`
+        type === "video"
+          ? `https://pixabay.com/api/videos/?key=${videoKey}&video_type=${type}&per_page=20&safesearch=true`
+          : `https://pixabay.com/api/?key=${key}&image_type=${type}&per_page=20&safesearch=true`
       );
       if (response.status === 200) {
-        console.log(response.data.hits[0].videos.medium.url);
-        setVideosApiData(response.data.hits);
+        // console.log(response.data.hits[0].videos.medium.url);
+        // setVideosApiData(response.data.hits);
+        type === "video"
+          ? setStoredApiData(response.data.hits)
+          : setStoredApiData(response.data.hits);
+        console.log(response.data.hits);
       }
     } catch (error) {
       console.log(error);
     }
+    setImageType("");
   }
 
-  // function handleLoading() {
-  //   setLoadingImage(!loadingImage);
-  //   console.log("loading...");
-  // }
-  // console.log(clickedImages);
-  // console.log(inputValue);
+  // console.log(proposal.map((item) => item));
+
   return (
     <main
       style={{ backgroundImage: `url(${Clonebg})` }}
-      className=" h-[520px] bg-no-repeat bg-[rgba(25,27,38,0.5)]"
+      className=" h-[540px] bg-no-repeat bg-[rgba(25,27,38,0.5)]"
     >
-      <section className="h-[520px] bg-[rgba(25,27,38,0.5)]">
+      <section className="h-[540px] bg-[rgba(25,27,38,0.5)]">
         <div className="flex justify-between px-6 py-4">
           <div>
             <h2 className="text-white text-3xl font-bold">PIXABAY</h2>
@@ -164,14 +155,14 @@ const HomePage = () => {
               >
                 <div
                   className="text-white font-normal cursor-pointer"
-                  onClick={() => handleProposal(item)}
+                  onClick={() => handleProposal(item.qurey)}
                 >
-                  {item}
+                  {item.name}
                 </div>
               </div>
             ))}
           </div>
-          <div className="flex items-center gap-4 bg-white text-center opacity-50 text-white p-4 rounded-full bg-[hsla(0,0%,100%,.4)]">
+          <div className="flex items-center gap-4 bg-white text-center opacity-50 bg-[hsla(0,0%,100%,0.24)]  p-4 rounded-full">
             <IoSearch
               className="text-xl text-black cursor-pointer"
               onClick={handleSearchClick}
@@ -183,11 +174,11 @@ const HomePage = () => {
               // @ts-ignore
               onKeyPress={handleKeyPress}
               placeholder="Search for free image, Videos, Music & more"
-              className="w-full border-none outline-none text-[15px]  placeholder-[#191b26] bg-[hsla(0,0%,100%,0.24)] focus:opacity-25"
+              className="w-full border-none outline-none text-[15px] bg-[hsla(0,0%,100%,0.24)] placeholder-[#191b26]  focus:opacity-25"
             />
           </div>
-          <div>
-            <ul className="h-[30px] flex items-center gap-2 font-normal  text-[14px] text-nowrap cursor-pointer max-sm:overflow-auto">
+          <div className="overflow-auto no-scrollbar flex items-center gap-2">
+            <ul className="h-auto flex items-center gap-2 font-normal  text-[14px] text-nowrap cursor-pointer max-sm:overflow-auto">
               {suggessitions.map((item, ind) => (
                 <div key={ind}>
                   <li className="text-white rounded-lg p-2 font-base bg-opacity-100 bg-[hsla(0,0%,100%,.24)] hover:bg-[hsla(0,0%,100%,.4)]">
@@ -220,17 +211,26 @@ const HomePage = () => {
               key={item.id}
               className="cursor-pointer mb-4 break-inside-avoid"
             >
-              <img
-                src={item.webformatURL}
-                alt="images"
-                className="w-full h-auto object-cover rounded-md"
-                onClick={() => handleImageSize(item.largeImageURL)}
-                loading="lazy"
-              />
+              {item.type === "film" ? (
+                <video controls>
+                  <source
+                    src={item.videos.medium.url}
+                    type="video/mp4"
+                    className="w-full h-auto object-cover rounded-md"
+                  />
+                </video>
+              ) : (
+                <img
+                  src={item.webformatURL}
+                  alt="images"
+                  className="w-full h-auto object-cover rounded-md"
+                  onClick={() => handleImageSize(item.largeImageURL)}
+                />
+              )}
             </div>
           ))}
       </section>
-      <section className="columns-1 sm:columns-2 lg:columns-3 p-4 gap-4">
+      {/* <section className="columns-1 sm:columns-2 lg:columns-3 p-4 gap-4">
         {videosApiData &&
           videosApiData.map((item) => (
             <div key={item.id} className="cursor-pointer mb-4">
@@ -243,10 +243,19 @@ const HomePage = () => {
               </video>
             </div>
           ))}
-      </section>
-      {/* <button type="button" onClick={handleCallApi}>
-        click me!
-      </button> */}
+      </section> */}
+      {/* <section className="columns-1 sm:columns-2 lg:columns-3 p-4 gap-4">
+        {imagesApiData &&
+          imagesApiData.map((item) => (
+            <div key={item.id} className="cursor-pointer mb-4">
+              <img
+                src={item.webformatURL}
+                alt="images"
+                className="w-full h-auto object-cover rounded-md"
+              />
+            </div>
+          ))}
+      </section> */}
     </main>
   );
 };
