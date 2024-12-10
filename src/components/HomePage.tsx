@@ -1,4 +1,3 @@
-import Clonebg from "../assets/clonebg.jpg";
 import { IoSearch } from "react-icons/io5";
 import { suggessitions } from "../utils/Suggessition";
 // import { images } from "../images/Image";
@@ -173,7 +172,7 @@ const HomePage = () => {
                     item.qurey === title ? "text-black" : "text-white"
                   } p-2 rounded-full font-medium cursor-pointer ${
                     item.qurey === title
-                      ? "bg-white text-black !important"
+                      ? "bg-white"
                       : "bg-transparent hover:bg-[rgba(25,27,38,.04)]"
                   }`}
                   onClick={() => handleProposal(item.qurey)}
