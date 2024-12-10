@@ -12,8 +12,7 @@ const HomePage = () => {
   const videoKey = import.meta.env.VITE_PIXABAY_VIDEO_API_KEY;
 
   const [storedApiData, setStoredApiData] = useState<pixabayResponse[]>([]);
-
-  const [imageType, setImageType] = useState("all");
+  const [title, setTitle] = useState("photo");
   // const [clickedImages, setClickedImages] = useState("");
   const [inputValue, setInputValue] = useState("");
   // console.log(suggessitions);
@@ -105,6 +104,7 @@ const HomePage = () => {
 
   async function handleProposal(type: string) {
     // setImageType(item);
+    setTitle(type);
     try {
       const response = await axios.get(
         type === "video"
@@ -122,17 +122,30 @@ const HomePage = () => {
     } catch (error) {
       console.log(error);
     }
-    setImageType("");
   }
+
+  // functs
+
+  console.log(title);
 
   // console.log(proposal.map((item) => item));
 
+  const imagess = proposal
+    .filter((item) => item.qurey === title)
+    .map((item) => (item.qurey === title ? item.image : ""));
+
+  console.log(imagess);
+
   return (
     <main
-      style={{ backgroundImage: `url(${Clonebg})` }}
-      className=" h-[540px] bg-no-repeat bg-[rgba(25,27,38,0.5)]"
+      style={{
+        backgroundImage: `url(${imagess})`,
+        backgroundSize: "cover",
+      }}
+      className=" h-[540px]  bg-no-repeat bg-[rgba(25,27,38,0.5)]  max-sm:bg-center"
+      // onClick={handleBgImage}
     >
-      <section className="h-[540px] bg-[rgba(25,27,38,0.5)]">
+      <section className="h-[540px] w-full bg-[rgba(25,27,38,0.5)]">
         <div className="flex justify-between px-6 py-4">
           <div>
             <h2 className="text-white text-3xl font-bold">PIXABAY</h2>
@@ -144,17 +157,25 @@ const HomePage = () => {
         <div className="w-[800px] flex flex-col gap-7 mt-24 ml-auto mr-auto max-sm:w-auto">
           <div>
             <h1 className="text-center text-white text-3xl font-bold">
-              Stunning royalty-free images & royalty-free stock
+              {/* Stunning royalty-free images & royalty-free stock */}
+              {proposal.map((item, ind) => (
+                <div key={ind}>
+                  <p>{item.qurey === title ? item.title : ""}</p>
+                </div>
+              ))}
             </h1>
           </div>
           <div className="flex justify-around">
             {proposal.map((item, ind) => (
-              <div
-                key={ind}
-                className="hover:bg-[rgba(25,27,38,.04)] p-2 rounded-2xl bg-transparent"
-              >
+              <div key={ind} className="">
                 <div
-                  className="text-white font-normal cursor-pointer"
+                  className={`${
+                    item.qurey === title ? "text-black" : "text-white"
+                  } p-2 rounded-full font-medium cursor-pointer ${
+                    item.qurey === title
+                      ? "bg-white text-black !important"
+                      : "bg-transparent hover:bg-[rgba(25,27,38,.04)]"
+                  }`}
                   onClick={() => handleProposal(item.qurey)}
                 >
                   {item.name}
@@ -162,7 +183,7 @@ const HomePage = () => {
               </div>
             ))}
           </div>
-          <div className="flex items-center gap-4 bg-white text-center opacity-50 bg-[hsla(0,0%,100%,0.24)]  p-4 rounded-full">
+          <div className="flex items-center gap-4 bg-white text-center opacity-50 hover:hover:bg-[hsla(0,0%,100%,.4)] p-4 rounded-full">
             <IoSearch
               className="text-xl text-black cursor-pointer"
               onClick={handleSearchClick}
@@ -174,7 +195,7 @@ const HomePage = () => {
               // @ts-ignore
               onKeyPress={handleKeyPress}
               placeholder="Search for free image, Videos, Music & more"
-              className="w-full border-none outline-none text-[15px] bg-[hsla(0,0%,100%,0.24)] placeholder-[#191b26]  focus:opacity-25"
+              className="w-full border-none outline-none text-[15px] bg-transparent placeholder-[#191b26]"
             />
           </div>
           <div className="overflow-auto no-scrollbar flex items-center gap-2">
@@ -189,7 +210,7 @@ const HomePage = () => {
             </ul>
           </div>
         </div>
-        <div className="flex justify-between px-6 mt-20">
+        <div className="flex justify-between px-6 mt-20 max-sm:px-0 max-sm:text-[6px] max-sm:mt-12 max-sm:flex max-sm:gap-1 max-sm:text-nowrap">
           <p className="text-white text-[12px]">
             Free image by{" "}
             <a href="#" className="border-b border-white">
@@ -256,6 +277,12 @@ const HomePage = () => {
             </div>
           ))}
       </section> */}
+      {/* <div>
+        <video controls autoPlay loop className="cursor-pointer">
+          <source src="/static/videos/hero3.mp4" type="video/mp4" />
+          hiii
+        </video>
+      </div> */}
     </main>
   );
 };
