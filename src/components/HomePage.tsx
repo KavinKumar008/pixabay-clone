@@ -15,18 +15,15 @@ const HomePage = () => {
   const [inputValue, setInputValue] = useState("");
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const observerTarget = useRef(null);
-  // console.log(suggessitions);
-  // console.log(import.meta.env.VITE_API_KEY);
-
-  // console.log(images[0]);
-  // let url = `https://pixabay.com/api/?key=${key}&q=&image_type=photo&per_page=20&safesearch=true`;
-  // console.log(url);
+  const [clickedData, setClickedData] = useState("");
+  const [imageSuggessition, setImageSuggessition] = useState("");
+  // const observerTarget = useRef(null);
 
   async function handleCallApi(page: number) {
     console.log("handlecallapi");
     if (isLoading) return;
     setIsLoading(true);
+    setStoredApiData([]);
     try {
       const response = await axios.get(
         `https://pixabay.com/api/?key=${key}&image_type=photo&per_page=20&safesearch=true&page=${page}`
@@ -34,22 +31,22 @@ const HomePage = () => {
       if (response.status === 200) {
         // setStoredApiData(response.data.hits);
         setStoredApiData((prev) => [...prev, ...response.data.hits]);
-        // setPage((prevPage) => prevPage + 1);
       }
     } catch (error) {
       console.log(error);
     } finally {
       setIsLoading(false);
+      // setStoredApiData([]);
     }
   }
 
-  useEffect(() => {
-    handleCallApi(page);
-  }, []);
+  // useEffect(() => {
+  //   handleCallApi(page);
+  // }, []);
 
   console.log(page);
 
-  async function handleInputApi() {
+  async function handleInputApi(page: number) {
     console.log("handleInputApi");
     if (isLoading) return;
     setIsLoading(true);
@@ -60,6 +57,27 @@ const HomePage = () => {
       if (response.status === 200) {
         // setStoredApiData(response.data.hits);
         setStoredApiData((prev) => [...prev, ...response.data.hits]);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleClickData(item: string, page: number) {
+    // setClickedImages(item);
+    console.log("handleClickData");
+    if (isLoading) return;
+    setIsLoading(true);
+    // setStoredApiData([]);
+    try {
+      const response = await axios.get(
+        `https://pixabay.com/api/?key=${key}&q=${item}&image_type=photo&per_page=20&safesearch=true&page=${page}`
+      );
+      if (response.status === 200) {
+        // setStoredApiData(response.data.hits);
+        setStoredApiData((prev) => [...prev, ...response.data.hits]);
         // setPage((prevPage) => prevPage + 1);
       }
     } catch (error) {
@@ -69,39 +87,28 @@ const HomePage = () => {
     }
   }
 
-  async function handleClickData(item: string) {
-    // setClickedImages(item);
-    console.log("handleClickData");
-
-    if (isLoading) return;
-    setIsLoading(true);
-    try {
-      const response = await axios.get(
-        `https://pixabay.com/api/?key=${key}&q=${item}&image_type=photo&per_page=20&safesearch=true&page=${page}`
-      );
-      if (response.status === 200) {
-        // setStoredApiData(response.data.hits);
-        setStoredApiData((prev) => [...prev, ...response.data.hits]);
-        setPage((prevPage) => prevPage + 1);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   function handleSearchClick() {
-    handleInputApi();
-    setInputValue("");
-    console.log("hiiii ");
+    // handleInputApi(page);
+    // setInputValue("");
+    // console.log("hiiii ");
+    if (!inputValue.trim()) return; // Prevent search if the input is empty
+    setStoredApiData([]); // Clear previous data (if needed)
+    setPage(1); // Reset the page to the first one for a fresh search
+    handleInputApi(1); // Pass 1 for the first page load
+    setInputValue(""); // Optionally clear the input after submission
   }
 
   const handleKeyPress = (event: KeyboardEvent) => {
     // look for the Enter keyCode
-    if (event.keyCode === 13 || event.which === 13) {
-      handleInputApi();
-      setInputValue("");
+    // if (event.keyCode === 13 || event.which === 13) {
+    //   handleInputApi(page);
+    //   setInputValue("");g
+    // }
+    if (event.key === "Enter" && inputValue.trim()) {
+      setStoredApiData([]); // Clear previous data
+      setPage(1); // Reset page to 1
+      handleInputApi(1); // Call API on pressing Enter
+      setInputValue(""); // Optionally clear the input after submission
     }
   };
 
@@ -110,7 +117,7 @@ const HomePage = () => {
     console.log(item);
   }
 
-  async function handleProposal(type: string) {
+  async function handleProposal(type: string, page: number) {
     // setImageType(item);
     setTitle(type);
     if (isLoading) return;
@@ -131,6 +138,7 @@ const HomePage = () => {
         type === "video"
           ? setStoredApiData((prev) => [...prev, ...response.data.hits])
           : setStoredApiData((prev) => [...prev, ...response.data.hits]);
+        // setStoredApiData([]);
       }
     } catch (error) {
       console.log(error);
@@ -243,7 +251,15 @@ const HomePage = () => {
     const handleScroll = () => {
       if (!isLoading && checkIfAtBottom()) {
         setPage((prevPage) => prevPage + 1); // Increment page number for next fetch
-        handleCallApi(page);
+        // handleCallApi(page);
+        // handleInputApi(page);
+        // if (clickedData) {
+        //   handleProposal(clickedData, page);
+        // }
+        if (imageSuggessition) {
+          handleClickData(imageSuggessition, page);
+          setStoredApiData([]);
+        }
         console.log("hiiiii");
       }
     };
@@ -295,7 +311,10 @@ const HomePage = () => {
                       ? "bg-white"
                       : "bg-transparent hover:bg-[rgba(25,27,38,.04)]"
                   }`}
-                  onClick={() => handleProposal(item.qurey)}
+                  onClick={() => {
+                    handleProposal(item.qurey);
+                    setClickedData(item.qurey);
+                  }}
                 >
                   {item.name}
                 </div>
@@ -318,11 +337,18 @@ const HomePage = () => {
             />
           </div>
           <div className="overflow-auto no-scrollbar flex items-center gap-2">
-            <ul className="h-auto flex items-center gap-2 font-normal  text-[14px] text-nowrap cursor-pointer max-sm:overflow-auto">
+            <ul className="h-auto flex items-center gap-2 font-normal  text-[14px] text-nowrap cursor-pointer">
               {suggessitions.map((item, ind) => (
                 <div key={ind}>
                   <li className="text-white rounded-lg p-2 font-base bg-opacity-100 bg-[hsla(0,0%,100%,.24)] hover:bg-[hsla(0,0%,100%,.4)]">
-                    <div onClick={() => handleClickData(item)}>{item}</div>
+                    <div
+                      onClick={() => {
+                        handleClickData(item, page);
+                        setImageSuggessition(item);
+                      }}
+                    >
+                      {item}
+                    </div>
                   </li>
                 </div>
               ))}
