@@ -2,9 +2,10 @@ import { IoSearch } from "react-icons/io5";
 import { suggessitions } from "../utils/Suggessition";
 // import { images } from "../images/Image";
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { proposal } from "../proposal/Proposal";
 import { pixabayResponse } from "../types/pixabyResponse";
+import { MdClear } from "react-icons/md";
 
 const HomePage = () => {
   const key = import.meta.env.VITE_API_KEY;
@@ -17,13 +18,11 @@ const HomePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [clickedData, setClickedData] = useState("");
   const [imageSuggessition, setImageSuggessition] = useState("");
-  // const observerTarget = useRef(null);
 
   async function handleCallApi(page: number) {
     console.log("handlecallapi");
     if (isLoading) return;
     setIsLoading(true);
-    setStoredApiData([]);
     try {
       const response = await axios.get(
         `https://pixabay.com/api/?key=${key}&image_type=photo&per_page=20&safesearch=true&page=${page}`
@@ -36,26 +35,20 @@ const HomePage = () => {
       console.log(error);
     } finally {
       setIsLoading(false);
-      // setStoredApiData([]);
     }
   }
 
-  // useEffect(() => {
-  //   handleCallApi(page);
-  // }, []);
-
-  console.log(page);
-
-  async function handleInputApi(page: number) {
+  async function handleInputApi(qurey: string, page: number) {
     console.log("handleInputApi");
+    setPage(1);
+    setStoredApiData([]);
     if (isLoading) return;
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `https://pixabay.com/api/?key=${key}&q=${inputValue}&image_type=photo&per_page=20&safesearch=true&page=${page}`
+        `https://pixabay.com/api/?key=${key}&q=${qurey}&image_type=photo&per_page=20&safesearch=true&page=${page}`
       );
       if (response.status === 200) {
-        // setStoredApiData(response.data.hits);
         setStoredApiData((prev) => [...prev, ...response.data.hits]);
       }
     } catch (error) {
@@ -65,20 +58,19 @@ const HomePage = () => {
     }
   }
 
-  async function handleClickData(item: string, page: number) {
-    // setClickedImages(item);
+  async function handleClickData(item: string) {
+    setInputValue("");
     console.log("handleClickData");
+    setStoredApiData([]); // Clear previous data
+    setPage(1); // Reset to page 1
     if (isLoading) return;
     setIsLoading(true);
-    // setStoredApiData([]);
     try {
       const response = await axios.get(
-        `https://pixabay.com/api/?key=${key}&q=${item}&image_type=photo&per_page=20&safesearch=true&page=${page}`
+        `https://pixabay.com/api/?key=${key}&q=${item}&image_type=photo&per_page=20&safesearch=true&page=${1}`
       );
       if (response.status === 200) {
-        // setStoredApiData(response.data.hits);
         setStoredApiData((prev) => [...prev, ...response.data.hits]);
-        // setPage((prevPage) => prevPage + 1);
       }
     } catch (error) {
       console.log(error);
@@ -88,27 +80,18 @@ const HomePage = () => {
   }
 
   function handleSearchClick() {
-    // handleInputApi(page);
-    // setInputValue("");
-    // console.log("hiiii ");
     if (!inputValue.trim()) return; // Prevent search if the input is empty
     setStoredApiData([]); // Clear previous data (if needed)
     setPage(1); // Reset the page to the first one for a fresh search
-    handleInputApi(1); // Pass 1 for the first page load
-    setInputValue(""); // Optionally clear the input after submission
+    handleInputApi(inputValue, page); // Pass 1 for the first page load
+    // setInputValue(""); // Optionally clear the input after submission
   }
 
   const handleKeyPress = (event: KeyboardEvent) => {
-    // look for the Enter keyCode
-    // if (event.keyCode === 13 || event.which === 13) {
-    //   handleInputApi(page);
-    //   setInputValue("");g
-    // }
     if (event.key === "Enter" && inputValue.trim()) {
       setStoredApiData([]); // Clear previous data
       setPage(1); // Reset page to 1
-      handleInputApi(1); // Call API on pressing Enter
-      setInputValue(""); // Optionally clear the input after submission
+      handleInputApi(inputValue, page); // Call API on pressing Enter
     }
   };
 
@@ -118,27 +101,25 @@ const HomePage = () => {
   }
 
   async function handleProposal(type: string, page: number) {
-    // setImageType(item);
+    setInputValue("");
+    setStoredApiData([]);
+    setPage(1);
     setTitle(type);
     if (isLoading) return;
     setIsLoading(true);
+
     try {
+      // setPage(1);
+      console.log("proposal called");
       const response = await axios.get(
         type === "video"
           ? `https://pixabay.com/api/videos/?key=${videoKey}&video_type=${type}&per_page=20&safesearch=true&page=${page}`
           : `https://pixabay.com/api/?key=${key}&image_type=${type}&per_page=20&safesearch=true&page=${page}`
       );
       if (response.status === 200) {
-        // console.log(response.data.hits[0].videos.medium.url);
-        // setVideosApiData(response.data.hits);
-        // type === "video"
-        //   ? setStoredApiData(response.data.hits)
-        //   : setStoredApiData(response.data.hits);
-        // console.log(response.data.hits);
         type === "video"
           ? setStoredApiData((prev) => [...prev, ...response.data.hits])
           : setStoredApiData((prev) => [...prev, ...response.data.hits]);
-        // setStoredApiData([]);
       }
     } catch (error) {
       console.log(error);
@@ -151,85 +132,6 @@ const HomePage = () => {
     .filter((item) => item.qurey === title)
     .map((item) => (item.qurey === title ? item.image : ""));
 
-  // console.log(imagess);
-
-  // useEffect(() => {
-  //   const observer = new IntersectionObserver(
-  //     (entries) => {
-  //       if (entries[0].isIntersecting) {
-  //         console.log("Observer target is in view, loading more data");
-  //         console.log("hiiiii");
-  //         setPage((prevPage) => prevPage + 1);
-  //         // handleCallApi();
-  //         // handleInputApi();
-  //         handleProposal(type);
-  //       }
-  //     },
-  //     {
-  //       root: null, // Default to the viewport
-  //       rootMargin: "0px", // Trigger when the target element is fully in view
-  //       threshold: 1.0, // Trigger when the target element is fully visible
-  //     }
-  //   );
-
-  //   if (observerTarget.current) {
-  //     observer.observe(observerTarget.current);
-  //   }
-
-  //   return () => {
-  //     if (observerTarget.current) {
-  //       observer.unobserve(observerTarget.current);
-  //     }
-  //   };
-  // }, [observerTarget]);
-
-  // useEffect(() => {
-  //   console.log("heloooooooooooooooooo");
-  //   if (observerTarget.current) {
-  //     handleScroll();
-  //   }
-  // }, [isLoading]);
-  // console.log(page);
-
-  // function handleScroll() {
-  //   // console.log("hiiiiiiiiiiii");
-  //   const observer = new IntersectionObserver(
-  //     (entries) => {
-  //       if (entries[0].isIntersecting) {
-  //         console.log("Observer target is in view, loading more data");
-  //         setPage((prevPage) => prevPage + 1);
-  //         // console.log(page);
-  //         handleCallApi();
-  //         // handleInputApi();
-  //       }
-  //     },
-  //     {
-  //       root: null, // Default to the viewport
-  //       rootMargin: "0px", // Trigger when the target element is fully in view
-  //       threshold: 1.0, // Trigger when the target element is fully visible
-  //     }
-  //   );
-
-  //   if (observerTarget.current) {
-  //     observer.observe(observerTarget.current);
-  //   }
-
-  //   return () => {
-  //     if (observerTarget.current) {
-  //       observer.unobserve(observerTarget.current);
-  //     }
-  //   };
-  // }
-
-  // useEffect(() => {
-  //   console.log("byeeeeeeeeeeeeeeeeeeeeeee");
-  //   handleCallApi();
-  // }, [page]);
-
-  // useEffect(() => {
-  //   handleCallApi();
-  // }, [page]);
-
   // Function to check if we are at the bottom of the page
 
   const checkIfAtBottom = () => {
@@ -238,29 +140,12 @@ const HomePage = () => {
     return scrollPosition >= bottomPosition - 1;
   };
 
-  // Load more data when reaching the bottom
-  // useEffect(() => {
-  //   if (!isLoading && checkIfAtBottom()) {
-  //     // setPage((prevPage) => prevPage + 1); // Increment page number for next fetch
-  //     handleCallApi(page);
-  //   }
-  // }, [isLoading, page]);
-
-  // Event listener to handle scroll
+  // Infinite Scroll using useEffect
   useEffect(() => {
     const handleScroll = () => {
       if (!isLoading && checkIfAtBottom()) {
-        setPage((prevPage) => prevPage + 1); // Increment page number for next fetch
-        // handleCallApi(page);
-        // handleInputApi(page);
-        // if (clickedData) {
-        //   handleProposal(clickedData, page);
-        // }
-        if (imageSuggessition) {
-          handleClickData(imageSuggessition, page);
-          setStoredApiData([]);
-        }
-        console.log("hiiiii");
+        console.log("Loading more data............");
+        setPage((prevPage) => prevPage + 1); // Increment the page number to load more data
       }
     };
 
@@ -269,7 +154,46 @@ const HomePage = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [isLoading, page]);
+  }, [isLoading]); // Add dependencies to manage state changes
+  console.log(inputValue);
+  useEffect(() => {
+    console.log("Page updated :", page);
+    // Call the function based on the current condition
+    if (clickedData) {
+      handleProposalApi();
+    } else if (inputValue) {
+      handleProposalApi();
+    } else if (imageSuggessition) {
+      handleProposalApi();
+    } else {
+      handleCallApi(page);
+    }
+  }, [page]);
+
+  async function handleProposalApi() {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        clickedData === "video"
+          ? `https://pixabay.com/api/videos/?key=${videoKey}&video_type=${clickedData}&per_page=20&safesearch=true&page=${page}`
+          : `https://pixabay.com/api/?key=${key}&q=${
+              imageSuggessition === "" ? inputValue : imageSuggessition
+            }&image_type=${clickedData}&per_page=20&safesearch=true&page=${page}`
+      );
+      if (response.status === 200) {
+        clickedData === "video"
+          ? setStoredApiData((prev) => [...prev, ...response.data.hits])
+          : setStoredApiData((prev) => [...prev, ...response.data.hits]);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  console.log(page);
 
   return (
     <main
@@ -278,18 +202,16 @@ const HomePage = () => {
         backgroundSize: "cover",
       }}
       className=" h-[540px]  bg-no-repeat bg-[rgba(25,27,38,0.5)]  max-sm:bg-center"
-      // onClick={handleBgImage}
     >
       <section className="h-[540px] w-full bg-[rgba(25,27,38,0.5)]">
         <div className="flex justify-between px-6 py-4">
           <div>
             <h2 className="text-white text-3xl font-bold">PIXABAY</h2>
           </div>
-          {/* <div>Explore</div> */}
         </div>
 
         {/* </section> */}
-        <div className="w-[800px] flex flex-col gap-7 mt-24 ml-auto mr-auto max-sm:w-auto">
+        <div className="w-[800px] flex flex-col gap-7 mt-24 ml-auto mr-auto max-sm:w-auto max-md:w-auto">
           <div>
             <h1 className="text-center text-white text-3xl font-bold">
               {/* Stunning royalty-free images & royalty-free stock */}
@@ -312,7 +234,7 @@ const HomePage = () => {
                       : "bg-transparent hover:bg-[rgba(25,27,38,.04)]"
                   }`}
                   onClick={() => {
-                    handleProposal(item.qurey);
+                    handleProposal(item.qurey, page);
                     setClickedData(item.qurey);
                   }}
                 >
@@ -321,7 +243,7 @@ const HomePage = () => {
               </div>
             ))}
           </div>
-          <div className="flex items-center gap-4 bg-white text-center opacity-50 hover:hover:bg-[hsla(0,0%,100%,.4)] p-4 rounded-full">
+          <div className="flex items-center gap-4 bg-white text-center bg-[#dbd0d087] hover:hover:bg-[hsla(0,0%,100%,.4)] p-4 rounded-full">
             <IoSearch
               className="text-xl text-black cursor-pointer"
               onClick={handleSearchClick}
@@ -333,7 +255,11 @@ const HomePage = () => {
               // @ts-ignore
               onKeyPress={handleKeyPress}
               placeholder="Search for free image, Videos, Music & more"
-              className="w-full border-none outline-none text-[15px] bg-transparent placeholder-[#191b26]"
+              className="w-full border-none outline-none text-[15px] bg-transparent text-[#dbd0d087] placeholder-[#191b26]"
+            />
+            <MdClear
+              className="text-xl cursor-pointer"
+              onClick={() => setInputValue("")}
             />
           </div>
           <div className="overflow-auto no-scrollbar flex items-center gap-2">
@@ -343,7 +269,7 @@ const HomePage = () => {
                   <li className="text-white rounded-lg p-2 font-base bg-opacity-100 bg-[hsla(0,0%,100%,.24)] hover:bg-[hsla(0,0%,100%,.4)]">
                     <div
                       onClick={() => {
-                        handleClickData(item, page);
+                        handleClickData(item);
                         setImageSuggessition(item);
                       }}
                     >
