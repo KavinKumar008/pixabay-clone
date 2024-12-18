@@ -257,10 +257,14 @@ const HomePage = () => {
               placeholder="Search for free image, Videos, Music & more"
               className="w-full border-none outline-none text-[15px] bg-transparent text-[#dbd0d087] placeholder-[#191b26]"
             />
-            <MdClear
-              className="text-xl cursor-pointer"
-              onClick={() => setInputValue("")}
-            />
+            {inputValue ? (
+              <MdClear
+                className="text-xl cursor-pointer"
+                onClick={() => setInputValue("")}
+              />
+            ) : (
+              ""
+            )}
           </div>
           <div className="overflow-auto no-scrollbar flex items-center gap-2">
             <ul className="h-auto flex items-center gap-2 font-normal  text-[14px] text-nowrap cursor-pointer">
